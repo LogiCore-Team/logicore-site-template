@@ -23,6 +23,8 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.AspNetCore.DataProtection;
 using YAGOT_2._0.Core.Capabilities;
 
+LoadDotEnv();
+
 var builder = WebApplication.CreateBuilder(args);
 
 // لعدم حدوث تضارب او اخطاء عند تخزين وقت الطلبات او العمليات
@@ -544,4 +546,41 @@ static Task WriteAuthJsonAsync(HttpContext context, int statusCode, string code,
     return context.Response.WriteAsJsonAsync(
         new { success = false, code, message },
         context.RequestAborted);
+}
+
+static void LoadDotEnv()
+{
+    var current = Directory.GetCurrentDirectory();
+    string? envPath = null;
+    if (File.Exists(Path.Combine(current, ".env")))
+    {
+        envPath = Path.Combine(current, ".env");
+    }
+    else
+    {
+        var parent = Directory.GetParent(current)?.FullName;
+        if (parent != null && File.Exists(Path.Combine(parent, ".env")))
+        {
+            envPath = Path.Combine(parent, ".env");
+        }
+    }
+
+    if (envPath != null)
+    {
+        foreach (var rawLine in File.ReadAllLines(envPath))
+        {
+            var line = rawLine.Trim();
+            if (string.IsNullOrWhiteSpace(line) || line.StartsWith('#')) continue;
+            var idx = line.IndexOf('=');
+            if (idx > 0)
+            {
+                var key = line[..idx].Trim();
+                var value = line[(idx + 1)..].Trim();
+                if (Environment.GetEnvironmentVariable(key) == null)
+                {
+                    Environment.SetEnvironmentVariable(key, value);
+                }
+            }
+        }
+    }
 }

@@ -1,0 +1,15 @@
+**/.git
+**/.github
+**/.vs
+**/.vscode
+**/bin
+**/obj
+**/.env
+**/.env.*
+*.env
+*.user
+*.suo
+node_modules/
+tests/
+docs/
+artifacts/
